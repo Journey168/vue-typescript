@@ -1,7 +1,8 @@
+
 let name1 = "aaa"; //类型推论
 let title: string = "规定类型"; // 类型注解
-name1 = 2; // 错误 -- 上面已经推论出name1是字符串类型
-title = 5; //错误的 -- 已经声明是字符串类型
+//name1 = 2; // 错误 -- 上面已经推论出name1是字符串类型
+//title = 5; //错误的 -- 已经声明是字符串类型
 
 // 数组使用类型
 let names: string[]; //或者Array<string>
@@ -94,8 +95,8 @@ function warnUser(): void {alert('This is my warning message')}
  }
  //等效于
  function Person1(name:string,age:number){
-     this.name = name;
-     this.age = age;
+     //this.name = name;
+     //this.age = age;
  }
  Person1.prototype.say = function(){
     return "我的名字是" + this.name + "今年" + this.age + "岁"
@@ -125,3 +126,69 @@ function warnUser(): void {alert('This is my warning message')}
  const user = new Greeter("第一个名字","最后一个名字"); //创建对象实例
  console.log(user)
  console.log(greeting1(user))
+
+
+ //泛型 Generics
+ //Generics是指定义函数、接口、或类的时候 不预先指定具体的类型 而使用的时候再指定类型的一种特性
+ //定义泛型接口
+ interface Result<T>{
+    ok: 0 | 1;
+    data: T[];
+ }
+ //定义泛型函数
+ function getData<T>(): Result<T>{
+     const data: any[] = [
+        {id:1,name:"类型注释",verson: "1.0"},
+        {id:2,name:"编译型语言",verson: "2.0"}
+     ]
+     return {ok:1,data};
+ }
+ //使用泛型
+ getData<Result<string>>().data;
+
+
+
+ //装饰器原理
+ //装饰器实际上是一个函数 通过定义劫持 能够对类方法 属性 提供额外的扩展功能
+
+ //类装饰器
+ function isFoo(target){
+     console.log(target===Foo); //true
+     target.isFoo = true;
+     return target
+ }
+ //属性装饰器
+ function mua(target,name){
+     //target是原型，name是属性名
+     console.log(target === Foo.prototype);//true
+    target[name] = 'mua-------'
+ }
+ //方法装饰器
+ function dong(target,name,descriptor){
+     //target是原型 name是方法名 descriptor是描述符
+     console.log(target === Foo.prototype);//true
+     //方法定义方式： Object.defineProperty(target,name,descriptor)
+      console.log(target[name] === descriptor.value);
+     //这里通过修改descriptor.value扩展了bar方法
+     const bar = descriptor.value;
+     descriptor.value = function(){
+         console.log("dong____")
+         bar()
+     }
+     return descriptor
+ }
+ @isFoo
+ class Foo{
+     @mua aaa: string;
+     constructor(){
+         console.log("Foo的构造函数")
+     }
+     @dong
+     bar(){
+         console.log('bar---')
+     }
+ }
+ console.log(Foo.isFoo)
+ let f = new Foo()
+console.log(f.aaa);
+f.bar()
